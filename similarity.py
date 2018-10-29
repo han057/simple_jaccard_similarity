@@ -4,65 +4,76 @@ import logging
 import random
 from nltk.corpus import stopwords
 
-def loadStopWords():
-    return tuple(stopwords.words('english'))
+logging.basicConfig(level=logging.DEBUG)
 
-def loadShingles(file, stop_word_tuple):
-    universal_shingles = set()
-    shingles_per_file = dict()
-    
-    for l in file:
-        article_shingles = set()
-        words = l.split(' ')
-        for i in range(1, len(words)):
-            logging.debug("[+] Checking if the word is a stop word...")
-            if words[i].lower() in stop_word_tuple:
-                logging.debug("[+] The word is a stop word!")
-                shingle = words[i] + ' ' +  words[i + 1] if((i+1)<=len(words)) else '' + ' ' + words[i + 2] if (i+1)<=len(words) else ''
-                logging.debug("[+] Checking if the shingle is not in the article shingles")
-                if shingle not in article_shingles:
-                    logging.debug("[+] The shingle is not in the article shingles, adding it...")
-                    article_shingles.add(shingle)
-                    logging.debug("[+] Checking if the shingle is not in the universe of shingles")
-                    if shingle not in universal_shingles:
-                        logging.debug("[+] The shingle is not in the universe of shingles, adding it...")
-                        universal_shingles.add(shingle)
-        logging.debug("[+] Adding new tuple to the golder of every file shingles")
-        shingles_per_file[words[0]] = article_shingles
-    return (list(universal_shingles), shingles_per_file)            
 
 def buildHashFunction(a, b, c):
     def hashFunction(x):
-        return (a*x+b)%c
+        return (a*x+b) % c
     return hashFunction
 
 
+def hashFunctionsSet(primeNumber, numberOfFunctions):
+    hashFunctions = list()
+    for i in range(numberOfFunctions):
+        a = random.randint(0, 10000)
+        b = random.randint(0, 10000)
+        hashFunctions.append(buildHashFunction(a, b, primeNumber))
+    return hashFunctions
 
 
-stop_word_tuple = loadStopWords()
-with open('dataset_1.txt') as f:
-    universal_shingles, shingles_per_file_dict = loadShingles(f, stop_word_tuple)
+def loadStopWords():
+    return tuple(stopwords.words('english'))
 
 
-print("""
-******************************************
-Numbers of articles [{}]
-Shingle unverse size [{}]
-******************************************
-""".format(len(shingles_per_file_dict), len(universal_shingles)))
+def loadShingles(file, stop_word_tuple):
+    index = 0
+    prime = 38
+    numberOfHashFunctions = 5
+    universal_shingles = list()
+    shingles_per_file = dict()
+    hashFunctions = hashFunctionsSet(prime, numberOfHashFunctions)
+    articles = file.read().split("\n")
+    numberOfArticles = len(articles)
+    numberOfArticles = 2
+    signatureMatrix = [[prime]*numberOfHashFunctions]*numberOfArticles
+    for a in range(numberOfArticles):
+        article_shingles = set()
+        words = articles[a].split(' ')
+        numberOfWords = int(len(words)/4)
+        for w in range(1, numberOfWords):
+            if words[w].lower() in stop_word_tuple:
+                shingle = words[w]
+                if((w+1) < numberOfWords):
+                    shingle += ' ' + words[w+1]
+                    if((w+2) < numberOfWords):
+                        shingle += ' ' + words[w+2]
+                try:
+                    indexOfShingle = universal_shingles.index(shingle)
+                except:
+                    indexOfShingle = index
+                    index += 1
+                    universal_shingles.append(shingle)
 
-print(universal_shingles[0])
-print(universal_shingles[535])
+                if indexOfShingle not in article_shingles:
+                    article_shingles.add(indexOfShingle)
+                    for h in range(numberOfHashFunctions):
+                        bucket = hashFunctions[h](indexOfShingle)
+                        if bucket < signatureMatrix[a][h]:
+                            signatureMatrix[a][h] = bucket
+    return (len(universal_shingles), len(shingles_per_file), signatureMatrix)
 
-a = random.randint(0, 1000)    
-b = random.randint(0, 1000)
-c = 5563
 
-print("""
-******************************************
-a = {}
-b = {}
-c = {}
-******************************************
-""".format(a, b, c))
+def main():
+    with open('dataset_1.txt') as f:
+        us, spf, signatureMatrix = loadShingles(f, loadStopWords())
 
+    print("""
+    ******************************************
+    Numbers of articles [{}]
+    Shingle unverse size [{}]
+    ******************************************
+    """.format(us, spf))
+    print(signatureMatrix)
+
+main()
