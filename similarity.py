@@ -3,6 +3,7 @@ import pprint
 import logging
 import random
 from nltk.corpus import stopwords
+import numpy as np
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -31,12 +32,13 @@ def loadShingles(file, stop_word_tuple):
     prime = 38
     numberOfHashFunctions = 5
     universal_shingles = list()
-    shingles_per_file = dict()
     hashFunctions = hashFunctionsSet(prime, numberOfHashFunctions)
     articles = file.read().split("\n")
     numberOfArticles = len(articles)
     numberOfArticles = 2
-    signatureMatrix = [[prime]*numberOfHashFunctions]*numberOfArticles
+    signatureMatrix = np.full((numberOfArticles, numberOfHashFunctions), prime)
+    [[prime]*numberOfHashFunctions]*numberOfArticles
+    print(signatureMatrix)
     for a in range(numberOfArticles):
         article_shingles = set()
         words = articles[a].split(' ')
@@ -61,19 +63,19 @@ def loadShingles(file, stop_word_tuple):
                         bucket = hashFunctions[h](indexOfShingle)
                         if bucket < signatureMatrix[a][h]:
                             signatureMatrix[a][h] = bucket
-    return (len(universal_shingles), len(shingles_per_file), signatureMatrix)
+    return (len(universal_shingles), numberOfArticles, signatureMatrix)
 
 
 def main():
     with open('dataset_1.txt') as f:
-        us, spf, signatureMatrix = loadShingles(f, loadStopWords())
+        us, spf, sm = loadShingles(f, loadStopWords())
 
     print("""
     ******************************************
     Numbers of articles [{}]
     Shingle unverse size [{}]
     ******************************************
-    """.format(us, spf))
-    print(signatureMatrix)
+    """.format(spf, us))
+    print(sm)
 
 main()
