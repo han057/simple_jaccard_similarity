@@ -503,5 +503,5 @@ ASALocalRun/
 .localhistory/
 .vscode/
 
-documents_similarity/
+similarity/
 # End of https://www.gitignore.io/api/python,virtualenv,sublimetext,visualstudio
