@@ -119,8 +119,8 @@ def calculateJaccardSimilarity(sm, threshold):
 
 
 def usage():
-    print("""
-        similarity.py -f [file] -n [numberOfHashFunctions] -t [threshold]
+    print("""\nUsage:\n
+    similarity.py -f [file] -n [numberOfHashFunctions] -t [threshold]
     """)
 
 
@@ -128,6 +128,9 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv, "f:n:t:")
     except getopt.GetoptError:
+        usage()
+        sys.exit(2)
+    if len(opts) != 3:
         usage()
         sys.exit(2)
     for opt, arg in opts:
@@ -158,6 +161,7 @@ def main(argv):
 *        Shingle unverse size        [{}]\t*
 *        Number of similar documents [{}]\t*
 *************************************************\n\n""".format(len(cm), usLen, len(maxSimilarity)))
+        print(maxSimilarity)
 
 if __name__ == "__main__":
     start = time.clock()
