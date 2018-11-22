@@ -164,6 +164,10 @@ def main(argv):
         print(maxSimilarity)
 
 if __name__ == "__main__":
-    start = time.clock()
-    main(sys.argv[1:])
-    print("{:.2f}s ".format((time.clock() - start)))
+    try:
+        start = time.clock()
+        main(sys.argv[1:])
+        print("{:.2f}s ".format((time.clock() - start)))
+    except (KeyboardInterrupt, SystemExit):
+        print("\nStopped from keyboard")
+        sys.exit(2)
